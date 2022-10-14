@@ -16,6 +16,7 @@ global Ping_On_Startup
 global Token
 global GuildId
 GuildId = "Guild Id here"
+# guild id here
 Token = ""
 # Bot Token Here Obviously
 # Bot needs all intents
