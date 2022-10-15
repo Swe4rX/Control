@@ -1,5 +1,5 @@
 urllib3
 shutils
 discord.py
-pyautogui
-requests
+pyautogui~=0.9.53
+requests~=2.28.1
