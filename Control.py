@@ -23,7 +23,7 @@ global token
 global guild_iD
 guild_iD = "984582818489331732"
 # guild id here
-token = "MTAwODQ5Nzk3MzkwNDI4MTc0Mg.GYZuuv.qw7-cvWr5Uvp4DjQMZ_ynzOd91zjd36dCW8XoQ"
+token = "MTAwODQ5Nzk3MzkwNDI4MTc0Mg.Gt4iqj.eAYKAc7pTrFD-rI4kZ4Kl2ggRKBZ12j9t9bKZs"
 # Bot Token Here Obviously
 # Bot needs all intents
 ping_on_startup = True
