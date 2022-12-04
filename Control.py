@@ -23,9 +23,9 @@ from discord.utils import get
 global ping_on_startup
 global token
 global guild_iD
-guild_iD = "1036648125307297812"
+guild_iD = ""
 # guild id here
-token = "MTAxNDcwNzQ3Njg5NTExNzM3NA.GPTdzm.VqhLPWhkguJPTzWQEYKFq-MZk2yTD7I2IdMOZo"
+token = ""
 # Bot Token Here Obviously
 
 # Bot needs all intents
